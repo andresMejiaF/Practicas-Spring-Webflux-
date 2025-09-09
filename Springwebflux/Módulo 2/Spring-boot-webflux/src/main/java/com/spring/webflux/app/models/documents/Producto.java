@@ -7,8 +7,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import javax.xml.crypto.Data;
 import java.util.Date;
 
-@Document(collation = "productos")
-
+@Document(collection  = "productos")
 public class Producto {
 
     @Id

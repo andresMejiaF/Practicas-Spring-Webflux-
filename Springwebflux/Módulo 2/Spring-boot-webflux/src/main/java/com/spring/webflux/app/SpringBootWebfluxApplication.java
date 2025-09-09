@@ -11,6 +11,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.data.mongodb.core.ReactiveMongoTemplate;
 import reactor.core.publisher.Flux;
 
+import java.util.Date;
+
 @SpringBootApplication
 public class SpringBootWebfluxApplication implements CommandLineRunner {
     @Autowired
@@ -27,16 +29,24 @@ public class SpringBootWebfluxApplication implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+        mongoTemplate();
+    }
 
+
+    public void mongoTemplate(){
         mongoTemplate.dropCollection("productos")
                 .subscribe();
 
         Flux.just( new Producto("TV panasonic", 4500.88),
-                new Producto("Xbox series", 2500.88),
-                new Producto("Play 5", 4500.88),
-                new Producto("Switch Oled", 4500.88),
-                new Producto("Diademas", 4500.88)
-        ).flatMap(producto -> dao.save(producto))
+                        new Producto("Xbox series", 2500.88),
+                        new Producto("Play 5", 4500.88),
+                        new Producto("Switch Oled", 4500.88),
+                        new Producto("Diademas", 4500.88)
+                ).flatMap(producto -> {
+                    producto.setCreateAt(new Date());
+                    return dao.save(producto);
+                })
                 .subscribe(producto -> log.info("Insert: "+producto.getId()+ " " + producto.getNombre()));
+
     }
 }
