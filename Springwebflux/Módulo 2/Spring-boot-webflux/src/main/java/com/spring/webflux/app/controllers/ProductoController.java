@@ -22,8 +22,14 @@ public class ProductoController {
     @GetMapping({"/listar","/"})
     public  String listar (Model model){
 
-        Flux<Producto> productos = productoDao.findAll();
+        Flux<Producto> productos = productoDao.findAll()
+                .map(producto -> {
 
+                    producto.setNombre(producto.getNombre().toUpperCase());
+                    return producto;
+                });
+
+        productos.subscribe(producto -> log.info(producto.getNombre()));
 
         model.addAttribute("productos", productos); // al pasar productos por aqui automaticamente se
         // va suscribir
