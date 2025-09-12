@@ -77,4 +77,22 @@ public class ProductoController {
         return "listar";
     }
 
+    @GetMapping("/listar-chunked")
+    public  String listarChuncked (Model model){
+
+        Flux<Producto> productos = productoDao.findAll()
+                .map(producto -> {
+
+                    producto.setNombre(producto.getNombre().toUpperCase());
+                    return producto;
+                }).repeat(5000);
+
+        model.addAttribute("productos", productos); // al pasar productos por aqui automaticamente se
+        // va suscribir
+        model.addAttribute("titulo", "Listado de productos");
+
+
+        return "listar-chuncked";
+    }
+
 }
