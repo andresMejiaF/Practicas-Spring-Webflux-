@@ -1,6 +1,7 @@
 package com.spring.webflux.app.controllers;
 
 
+import com.spring.webflux.app.models.documents.Categoria;
 import com.spring.webflux.app.models.documents.Producto;
 import com.spring.webflux.app.models.services.ProductoService;
 import jakarta.validation.Valid;
@@ -10,10 +11,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.SessionAttributes;
+import org.springframework.web.bind.annotation.*;
 import org.springframework.web.bind.support.SessionStatus;
 import org.thymeleaf.spring6.context.webflux.ReactiveDataDriverContextVariable;
 import reactor.core.publisher.Flux;
@@ -29,6 +27,11 @@ public class ProductoController {
     private ProductoService productoService;
 
     private static final Logger log = LoggerFactory.getLogger(ProductoController.class);
+
+    @ModelAttribute("categorias")
+    public  Flux<Categoria> categorias (){
+        return productoService.findAllCategorie();
+    }
 
 
     @GetMapping({"/listar","/"})
@@ -114,7 +117,20 @@ public class ProductoController {
         }
 
     }
-
+    @GetMapping("/eliminar/{id}")
+    public Mono<String> eliminar(@PathVariable String id){ //binding result
+        return productoService.findById(id)
+                .defaultIfEmpty(new Producto())
+                .flatMap(producto -> {
+                    if(producto.getId() == null){
+                        return Mono.error( new InterruptedException("El producto a eliminar no existe"));
+                    }
+                    return Mono.just(producto);
+                })
+                .flatMap(productoService::delete)
+                        .then(Mono.just("redirect:/listar?success=producto+eliminado+con+exito"))
+                    .onErrorResume(ex -> Mono.just("redirect:/listar?error=no+existe+el+producto+a+eliminar"));
+    }
 
 
     @GetMapping("/listar-datadriver")

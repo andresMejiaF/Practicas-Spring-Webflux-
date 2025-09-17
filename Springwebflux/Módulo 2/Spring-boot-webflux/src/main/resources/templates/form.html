@@ -30,7 +30,17 @@
         <label for="createAt">Fecha</label>
         <div><input type="date" th:field="*{createAt}"/></div>
     </div>
+    <div>
+        <label for="categoria">Categoria</label>
+        <div><select th:field="*{categoria.id}">
 
+            <option value="">-- seleccionar --</option>
+            <option th:each="categoria: ${categorias}" th:value="${categoria.id}" th:text="${categoria.nombre}">-- seleccionar --</option>
+
+        </select>
+            <small th:if="${#fields.hasErrors('categoria.id')}" th:errors="*{categoria.id}"></small>
+        </div>
+    </div>
     <div>
         <input type="submit" th:value="${boton}"/>
     </div>
