@@ -20,16 +20,24 @@
         <th>nombre</th>
         <th>precio</th>
         <th>fecha</th>
+        <th>categoria</th>
         <th>editar</th>
+        <th>eliminar</th>
     </tr>
     </thead>
     <tbody>
     <tr th:each="producto : ${productos}">
-        <td th:text="${producto.id}"></td>
+        <td>
+            <a th:href="@{/ver/} + ${producto.id}"
+               th:text="${#strings.abbreviate(producto.id, 10)}">
+            </a>
+        </td>
         <td th:text="${producto.nombre}"></td>
-        <td th:text="${producto.precio}"></td>
-        <td th:text="${producto.createAt}"></td>
+        <td th:text="${#numbers.formatCurrency(producto.precio)}"></td>
+        <td th:text="${#calendars.format(producto.createAt, 'dd/MM/yyyy')}"></td>
+        <td th:text="${producto.categoria.nombre}"></td>
         <td><a th:href="@{/form/} + ${producto.id}">editar</a></td>
+        <td><a th:href="@{/eliminar/} + ${producto.id}" onclick="return confirm('Estas seguro que desease liminar ?');">eliminar</a></td>
     </tr>
     </tbody>
 </table>
