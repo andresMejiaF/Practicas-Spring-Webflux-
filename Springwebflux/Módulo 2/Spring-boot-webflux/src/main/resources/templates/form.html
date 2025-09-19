@@ -11,38 +11,54 @@
     <a th:href="@{/listar}">volver</a>
 </div>
 
-<form th:action="@{/form}" method="post" th:object="${producto}">
+<form th:action="@{/form}" method="post" th:object="${producto}" enctype="multipart/form-data">
     <input th:if="${producto.id != null}" type="hidden" th:field="*{id}" />
 
     <div>
         <label for="nombre">Nombre</label>
-        <div><input type="text" th:field="*{nombre}"/></div>
+        <div>
+            <input type="text" th:field="*{nombre}" />
+        </div>
         <small th:if="${#fields.hasErrors('nombre')}" th:errors="*{nombre}"></small>
     </div>
 
     <div>
         <label for="precio">Precio</label>
-        <div><input type="number" th:field="*{precio}"/></div>
+        <div>
+            <input type="number" th:field="*{precio}" />
+        </div>
         <small th:if="${#fields.hasErrors('precio')}" th:errors="*{precio}"></small>
     </div>
 
     <div>
         <label for="createAt">Fecha</label>
-        <div><input type="date" th:field="*{createAt}"/></div>
+        <div>
+            <input type="date" th:field="*{createAt}" />
+        </div>
     </div>
+
     <div>
         <label for="categoria">Categoria</label>
-        <div><select th:field="*{categoria.id}">
-
-            <option value="">-- seleccionar --</option>
-            <option th:each="categoria: ${categorias}" th:value="${categoria.id}" th:text="${categoria.nombre}">-- seleccionar --</option>
-
-        </select>
-            <small th:if="${#fields.hasErrors('categoria.id')}" th:errors="*{categoria.id}"></small>
+        <div>
+            <select th:field="*{categoria.id}">
+                <option value="">-- seleccionar --</option>
+                <option th:each="categoria: ${categorias}"
+                        th:value="${categoria.id}"
+                        th:text="${categoria.nombre}">
+                    -- seleccionar --
+                </option>
+            </select>
+        </div>
+        <small th:if="${#fields.hasErrors('categoria.id')}" th:errors="*{categoria.id}"></small>
+    </div>
+    <div>
+        <label for="file">Foto</label>
+        <div>
+            <input type="file" name="file" />
         </div>
     </div>
     <div>
-        <input type="submit" th:value="${boton}"/>
+        <input type="submit" th:value="${boton}" />
     </div>
 </form>
 </body>
