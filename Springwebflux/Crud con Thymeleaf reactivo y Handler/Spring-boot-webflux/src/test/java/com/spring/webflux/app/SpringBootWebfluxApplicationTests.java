@@ -6,6 +6,8 @@ import com.spring.webflux.app.models.services.ProductoService;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.test.autoconfigure.web.reactive.AutoConfigureWebTestClient;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.reactive.server.WebTestClient;
@@ -15,7 +17,9 @@ import java.util.Collections;
 import java.util.List;
 
 
-@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
+//@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT) random port
+@AutoConfigureWebTestClient
+@SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.MOCK)
 class SpringBootWebfluxApplicationTests {
 
 
@@ -25,10 +29,13 @@ class SpringBootWebfluxApplicationTests {
     @Autowired
     private ProductoService productoService;
 
+
+    @Value("${config.base.endpoint}")
+    private String url;
     @Test
     void listarTest() {
         client.get()
-                .uri("/api/v2/productos")
+                .uri(url)
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk()
@@ -49,10 +56,10 @@ class SpringBootWebfluxApplicationTests {
     @Test
     void verTest() {
 
-        Producto producto= productoService.findByNombre("Xbox series").block();
+        Producto producto= productoService.findByNombre("Switch Oled").block();
 
         client.get()
-                .uri("/api/v2/productos/{id}", Collections.singletonMap("id", producto.getId()))
+                .uri(url+"/{id}", Collections.singletonMap("id", producto.getId()))
                 .accept(MediaType.APPLICATION_JSON)
                 .exchange()
                 .expectStatus().isOk()
@@ -62,7 +69,7 @@ class SpringBootWebfluxApplicationTests {
                     Producto p = response.getResponseBody();
 
                     //  Assertions.assertEquals(9, productos.size());
-                    Assertions.assertEquals(p.getNombre(), "Xbox series");
+                    Assertions.assertEquals(p.getNombre(), "Switch Oled");
                     Assertions.assertNotNull(p.getId());
                     Assertions.assertTrue(p.getId().length() > 0);
 
@@ -82,7 +89,7 @@ class SpringBootWebfluxApplicationTests {
         Producto producto = new Producto("Computador", 23321.9, categoria);
 
         client.post()
-                .uri("/api/v2/productos")
+                .uri(url)
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON)
                 .body(Mono.just(producto), Producto.class)
@@ -93,7 +100,50 @@ class SpringBootWebfluxApplicationTests {
                 .jsonPath("$.id").isNotEmpty()
                 .jsonPath("$.nombre").isEqualTo("Computador")
                 .jsonPath("$.categoria.nombre").isEqualTo("Electronico");
-        ;
 
+
+    }
+
+    @Test
+    public void editarTest(){
+
+        Producto producto = productoService.findByNombre("Xbox series").block();
+        Categoria categoria = productoService.findByCategoriaNombre("Electronico").block(); //entrega el objeto y no el mono
+        Producto productoEditado = new Producto("Xbox series melito series s", 53321.9, categoria);
+
+        client.put()
+                .uri(url+"/{id}", Collections.singletonMap("id", producto.getId()))
+                .contentType(MediaType.APPLICATION_JSON)
+                .accept(MediaType.APPLICATION_JSON)
+                .body(Mono.just(productoEditado), Producto.class)
+                .exchange()
+                .expectStatus().isCreated()
+                .expectHeader().contentType(MediaType.APPLICATION_JSON)
+                .expectBody()
+                .jsonPath("$.id").isNotEmpty()
+                .jsonPath("$.nombre").isEqualTo("Xbox series melito series s")
+                .jsonPath("$.categoria.nombre").isEqualTo("Electronico");
+
+    }
+
+
+    @Test
+    public void eliminar(){
+
+        Producto producto = productoService.findByNombre("NoteBook").block();
+
+        client.delete()
+                .uri(url+"/{id}", Collections.singletonMap("id", producto.getId()))
+                .exchange()
+                .expectStatus().isNoContent()
+                .expectBody()
+                .isEmpty();
+
+        client.get()
+                .uri(url+"/{id}", Collections.singletonMap("id", producto.getId()))
+                .exchange()
+                .expectStatus().isNotFound()
+                .expectBody()
+                .isEmpty();
     }
 }
